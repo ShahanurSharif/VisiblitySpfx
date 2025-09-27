@@ -1,0 +1,25 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/spfx-serve.schema.json",
+  "port": 4321,
+  "https": true,
+  "serveConfigurations": {
+    "default": {
+      "pageUrl": "https://monarch360demo.sharepoint.com/sites/shan",
+      "customActions": {
+        "a44a8b24-9467-4bca-a239-869bcd9eb12c": {
+          "location": "ClientSideExtension.ApplicationCustomizer",
+          "properties": {}
+        }
+      }
+    },
+    "visiblitySpfx": {
+      "pageUrl": "https://monarch360demo.sharepoint.com/sites/shan",
+      "customActions": {
+        "a44a8b24-9467-4bca-a239-869bcd9eb12c": {
+          "location": "ClientSideExtension.ApplicationCustomizer",
+          "properties": {}
+        }
+      }
+    }
+  }
+}

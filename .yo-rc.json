@@ -1,0 +1,19 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "plusBeta": false,
+    "isCreatingSolution": true,
+    "nodeVersion": "22.15.0",
+    "sdksVersions": {},
+    "version": "1.21.1",
+    "libraryName": "visiblity-spfx",
+    "libraryId": "bb78b2cb-4626-49cd-9523-3956d167deed",
+    "environment": "spo",
+    "packageManager": "npm",
+    "solutionName": "VisiblitySpfx",
+    "solutionShortDescription": "VisiblitySpfx description",
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "componentType": "extension",
+    "extensionType": "ApplicationCustomizer"
+  }
+}

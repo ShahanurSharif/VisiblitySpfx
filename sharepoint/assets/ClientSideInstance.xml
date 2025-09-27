@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Elements xmlns="http://schemas.microsoft.com/sharepoint/">
+    <ClientSideComponentInstance
+        Title="VisiblitySpfx"
+        Location="ClientSideExtension.ApplicationCustomizer"
+        ComponentId="a44a8b24-9467-4bca-a239-869bcd9eb12c"
+        Properties="{&quot;testMessage&quot;:&quot;Test message&quot;}">
+    </ClientSideComponentInstance>
+</Elements>

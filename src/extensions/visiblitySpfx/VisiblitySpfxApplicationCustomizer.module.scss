@@ -1,0 +1,145 @@
+// Styles for Visibility Toggler Application Customizer
+
+#vt-root {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  
+  // Ensure our components are above SharePoint content
+  .vt-fab {
+    z-index: 9999;
+    
+    // Smooth transitions for dragging
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    
+    &:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    &:active {
+      transform: scale(1.1);
+    }
+  }
+  
+  // Dialog styles
+  .ms-Dialog {
+    .ms-Dialog-main {
+      max-width: 500px;
+      border-radius: 8px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    }
+    
+    .ms-Dialog-header {
+      background: linear-gradient(135deg, #0078d4 0%, #106ebe 100%);
+      color: white;
+      border-radius: 8px 8px 0 0;
+      
+      .ms-Dialog-title {
+        color: white;
+        font-weight: 600;
+      }
+    }
+    
+    .ms-Dialog-content {
+      padding: 20px 24px;
+      
+      .ms-Toggle {
+        margin-bottom: 16px;
+        
+        .ms-Toggle-label {
+          font-weight: 500;
+          color: #323130;
+        }
+        
+        .ms-Toggle-stateText {
+          font-size: 12px;
+          color: #605e5c;
+        }
+      }
+    }
+    
+    .ms-Dialog-actions {
+      padding: 16px 24px 20px;
+      border-top: 1px solid #edebe9;
+      
+      .ms-Button {
+        min-width: 80px;
+        border-radius: 4px;
+        font-weight: 500;
+        
+        &.ms-Button--primary {
+          background: linear-gradient(135deg, #0078d4 0%, #106ebe 100%);
+          border: none;
+          
+          &:hover {
+            background: linear-gradient(135deg, #106ebe 0%, #005a9e 100%);
+          }
+        }
+      }
+    }
+  }
+  
+  // Focus trap styles
+  .ms-FocusTrapZone {
+    outline: none;
+  }
+  
+  // Accessibility improvements
+  .ms-Button:focus {
+    outline: 2px solid #0078d4;
+    outline-offset: 2px;
+  }
+  
+  .ms-Toggle:focus {
+    outline: 2px solid #0078d4;
+    outline-offset: 2px;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  #vt-root {
+    .vt-fab {
+      // Adjust FAB size on mobile
+      transform: scale(0.9);
+      
+      &:hover {
+        transform: scale(0.95);
+      }
+    }
+    
+    .ms-Dialog {
+      .ms-Dialog-main {
+        max-width: 90vw;
+        margin: 20px;
+      }
+    }
+  }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  #vt-root {
+    .vt-fab {
+      border: 2px solid;
+    }
+    
+    .ms-Dialog {
+      .ms-Dialog-main {
+        border: 2px solid;
+      }
+    }
+  }
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  #vt-root {
+    .vt-fab {
+      transition: none;
+      
+      &:hover {
+        transform: none;
+      }
+    }
+  }
+}
