@@ -9,7 +9,7 @@ import {
   Stack,
   Text,
   FocusTrapZone
-} from 'office-ui-fabric-react';
+} from '@fluentui/react';
 import { IVisibilitySettings, TARGET_SELECTORS } from '../models/IVisibilitySettings';
 
 export interface IVisibilityDialogProps {

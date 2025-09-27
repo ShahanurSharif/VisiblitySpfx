@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { IFabPosition } from '../models/IVisibilitySettings';
-import { PrimaryButton } from 'office-ui-fabric-react';
+import { PrimaryButton } from '@fluentui/react';
 
 export interface IFabProps {
   onToggleDialog: () => void;

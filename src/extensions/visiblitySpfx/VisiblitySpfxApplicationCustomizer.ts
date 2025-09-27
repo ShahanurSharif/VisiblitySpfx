@@ -1,149 +1,127 @@
 import { Log } from '@microsoft/sp-core-library';
 import {
-  BaseApplicationCustomizer
+  BaseApplicationCustomizer,
+  PlaceholderName,
+  PlaceholderContent
 } from '@microsoft/sp-application-base';
-import * as React from 'react';
-import * as ReactDom from 'react-dom';
-import { VisibilityTogglerApp } from '../../components/VisibilityTogglerApp';
-import { PersistenceService } from '../../services/PersistenceService';
-import { VisibilityManager } from '../../services/VisibilityManager';
-import { IVisibilitySettings, IFabPosition, DEFAULT_VISIBILITY_SETTINGS } from '../../models/IVisibilitySettings';
 
 import * as strings from 'VisiblitySpfxApplicationCustomizerStrings';
+import * as React from 'react';
+import * as ReactDom from 'react-dom';
+import { PrimaryButton } from '@fluentui/react';
+import Container from './components/Container';
 
 const LOG_SOURCE: string = 'VisiblitySpfxApplicationCustomizer';
 
 /**
  * If your command set uses the ClientSideComponentProperties JSON input,
  * it will be deserialized into the BaseExtension.properties object.
- * You can define an interface to describe it.
+ * You can define an interface to describe it. 
  */
 export interface IVisiblitySpfxApplicationCustomizerProperties {
-  // No properties needed for this extension
+  // This is an example; replace with your own property
+  testMessage: string;
 }
 
 /** A Custom Action which can be run during execution of a Client Side Application */
 export default class VisiblitySpfxApplicationCustomizer
   extends BaseApplicationCustomizer<IVisiblitySpfxApplicationCustomizerProperties> {
 
-  private persistenceService: PersistenceService;
-  private visibilityManager: VisibilityManager;
-  private rootElement: HTMLElement | null = null;
-  private currentSettings: IVisibilitySettings = DEFAULT_VISIBILITY_SETTINGS;
-  private currentFabPosition: IFabPosition | undefined = undefined;
+  private _topPlaceholder: PlaceholderContent | undefined;
+  private _containerElement: HTMLElement | undefined;
 
-  public async onInit(): Promise<void> {
+  public onInit(): Promise<void> {
     Log.info(LOG_SOURCE, `Initialized ${strings.Title}`);
+
+    // Show alert to confirm extension is loading
+    alert('Visibility Toggler Extension Loaded! 🎉');
 
     // Check for feature flag
     if (window.location.search.indexOf('VT_DISABLE') !== -1) {
       console.debug('[VT] Feature disabled via URL parameter');
-      return;
+      return Promise.resolve();
     }
 
-    try {
-      console.debug('[VT] Starting initialization...');
-      
-      // Initialize services
-      this.persistenceService = new PersistenceService(this.context);
-      this.visibilityManager = new VisibilityManager();
-      console.debug('[VT] Services initialized');
+    // Create a button that opens the dialog container
+    const buttonElement: React.ReactElement = React.createElement(
+      PrimaryButton,
+      {
+        text: 'Visibility Toggler',
+        onClick: this.openDialogContainer,
+        style: {
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          zIndex: 1000
+        }
+      }
+    );
 
-      // Load settings and position
-      await this.loadInitialData();
-      console.debug('[VT] Initial data loaded');
-
-      // Setup navigation event listener
-      this.context.application.navigatedEvent.add(this, this.onNavigated);
-      console.debug('[VT] Navigation event listener added');
-
-      // Mount React app
-      this.mountReactApp();
-      console.debug('[VT] React app mounted');
-
-      console.debug('[VT] Visibility Toggler initialized successfully');
-    } catch (error) {
-      console.error('[VT] Error initializing Visibility Toggler:', error);
+    const topPlaceholder = this.context.placeholderProvider.tryCreateContent(
+      PlaceholderName.Top
+    );
+    
+    if (topPlaceholder) {
+      this._topPlaceholder = topPlaceholder;
+      ReactDom.render(
+        buttonElement,
+        topPlaceholder.domElement
+      );
     }
 
     return Promise.resolve();
   }
 
-  private async loadInitialData(): Promise<void> {
-    // Load visibility settings
-    this.currentSettings = await this.persistenceService.loadVisibilitySettings();
-    
-    // Load FAB position
-    this.currentFabPosition = this.persistenceService.loadFabPosition();
+  private openDialogContainer = (): void => {
+    // Create container element for the dialog
+    this._containerElement = document.createElement('div');
+    this._containerElement.style.position = 'fixed';
+    this._containerElement.style.top = '0';
+    this._containerElement.style.left = '0';
+    this._containerElement.style.width = '100%';
+    this._containerElement.style.height = '100%';
+    this._containerElement.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    this._containerElement.style.zIndex = '2000';
+    this._containerElement.style.display = 'flex';
+    this._containerElement.style.alignItems = 'center';
+    this._containerElement.style.justifyContent = 'center';
 
-    // Apply initial settings
-    this.visibilityManager.applySettings(this.currentSettings);
-  }
-
-  private onNavigated = (): void => {
-    console.debug('[VT] Navigation event - re-applying settings');
-    this.visibilityManager.applySettings(this.currentSettings);
-  };
-
-  private mountReactApp(): void {
-    console.debug('[VT] Mounting React app...');
-    
-    // Create root element
-    this.rootElement = document.createElement('div');
-    this.rootElement.id = 'vt-root';
-    document.body.appendChild(this.rootElement);
-    console.debug('[VT] Root element created and appended to body');
-
-    // Mount React app
-    const element: React.ReactElement<{}> = React.createElement(VisibilityTogglerApp, {
-      settings: this.currentSettings,
-      fabPosition: this.currentFabPosition,
-      onSettingsChange: this.onSettingsChange,
-      onSettingsSave: this.onSettingsSave,
-      onFabPositionChange: this.onFabPositionChange
+    // Add click handler to close dialog when clicking outside
+    this._containerElement.addEventListener('click', (e) => {
+      if (e.target === this._containerElement) {
+        this.closeDialogContainer();
+      }
     });
 
-    console.debug('[VT] React element created, about to render...');
-    ReactDom.render(element, this.rootElement);
-    console.debug('[VT] React app rendered successfully');
-  }
+    // Create the Container component
+    const containerElement: React.ReactElement = React.createElement(
+      Container, 
+      {
+        context: this.context
+      }
+    );
 
-  private onSettingsChange = (settings: IVisibilitySettings): void => {
-    this.currentSettings = settings;
-    this.visibilityManager.applySettings(settings);
+    // Render the container in the dialog
+    ReactDom.render(containerElement, this._containerElement);
+
+    // Add to document body
+    document.body.appendChild(this._containerElement);
   };
 
-  private onSettingsSave = async (settings: IVisibilitySettings): Promise<void> => {
-    const success = await this.persistenceService.saveVisibilitySettings(settings);
-    
-    if (success) {
-      this.currentSettings = settings;
-      console.debug('[VT] Settings saved successfully');
-    } else {
-      // Handle read-only user scenario
-      console.warn('[VT] Failed to save settings - user may be read-only');
-      // Show toast notification or handle gracefully
+  private closeDialogContainer = (): void => {
+    if (this._containerElement) {
+      ReactDom.unmountComponentAtNode(this._containerElement);
+      document.body.removeChild(this._containerElement);
+      this._containerElement = undefined;
     }
-  };
-
-  private onFabPositionChange = (position: IFabPosition): void => {
-    this.currentFabPosition = position;
-    this.persistenceService.saveFabPosition(position);
   };
 
   public onDispose(): void {
-    // Cleanup
-    if (this.visibilityManager) {
-      this.visibilityManager.dispose();
+    if (this._topPlaceholder && this._topPlaceholder.domElement) {
+      ReactDom.unmountComponentAtNode(this._topPlaceholder.domElement);
     }
-
-    if (this.rootElement) {
-      ReactDom.unmountComponentAtNode(this.rootElement);
-      this.rootElement.remove();
-    }
-
-    this.context.application.navigatedEvent.remove(this, this.onNavigated);
     
-    console.debug('[VT] Visibility Toggler disposed');
+    // Clean up dialog container if it exists
+    this.closeDialogContainer();
   }
 }
