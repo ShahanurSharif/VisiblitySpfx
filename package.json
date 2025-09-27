@@ -18,9 +18,6 @@
     "@microsoft/decorators": "1.21.1",
     "@microsoft/sp-dialog": "1.21.1",
     "@microsoft/sp-application-base": "1.21.1",
-    "@microsoft/sp-http": "1.21.1",
-    "@microsoft/sp-page-context": "1.21.1",
-    "@fluentui/react": "^8.123.0",
     "react": "17.0.1",
     "react-dom": "17.0.1"
   },

@@ -8,7 +8,6 @@ import {
 import * as strings from 'VisiblitySpfxApplicationCustomizerStrings';
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
-import { PrimaryButton } from '@fluentui/react';
 import Container from './components/Container';
 
 const LOG_SOURCE: string = 'VisiblitySpfxApplicationCustomizer';
@@ -42,19 +41,26 @@ export default class VisiblitySpfxApplicationCustomizer
       return Promise.resolve();
     }
 
-    // Create a button that opens the dialog container
+    // Create a simple button that opens the dialog container
     const buttonElement: React.ReactElement = React.createElement(
-      PrimaryButton,
+      'button',
       {
-        text: 'Visibility Toggler',
         onClick: this.openDialogContainer,
         style: {
           position: 'fixed',
           top: '20px',
           right: '20px',
-          zIndex: 1000
+          zIndex: 1000,
+          padding: '10px 20px',
+          backgroundColor: '#0078d4',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          fontSize: '14px'
         }
-      }
+      },
+      'Visibility Toggler'
     );
 
     const topPlaceholder = this.context.placeholderProvider.tryCreateContent(
@@ -73,8 +79,11 @@ export default class VisiblitySpfxApplicationCustomizer
   }
 
   private openDialogContainer = (): void => {
+    console.debug('[VT] Button clicked - opening dialog container');
+    
     // Create container element for the dialog
     this._containerElement = document.createElement('div');
+    this._containerElement.setAttribute('data-vt-dialog', 'true');
     this._containerElement.style.position = 'fixed';
     this._containerElement.style.top = '0';
     this._containerElement.style.left = '0';
@@ -103,9 +112,11 @@ export default class VisiblitySpfxApplicationCustomizer
 
     // Render the container in the dialog
     ReactDom.render(containerElement, this._containerElement);
+    console.debug('[VT] Container component rendered in dialog');
 
     // Add to document body
     document.body.appendChild(this._containerElement);
+    console.debug('[VT] Dialog container added to document body');
   };
 
   private closeDialogContainer = (): void => {
