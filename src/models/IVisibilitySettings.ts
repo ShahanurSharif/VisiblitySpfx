@@ -33,6 +33,7 @@ export const DEFAULT_VISIBILITY_SETTINGS: IVisibilitySettings = {
   updatedUtc: new Date().toISOString(),
   toggles: {
     siteHeader: true,
+    hubNav: true,
     commandBar: true,
     leftNav: true,
     breadcrumb: true,
@@ -52,6 +53,14 @@ export const TARGET_SELECTORS: ITargetSelector[] = [
       '.spSiteHeader',
       '#SuiteNavWrapper',
       '.o365cs-nav-header'
+    ]
+  },
+  {
+    id: 'hubNav',
+    label: 'Hub Navigation',
+    selectors: [
+      '.ms-HubNav',
+      '.ms-HubNav-enhancedMegaMenu'
     ]
   },
   {

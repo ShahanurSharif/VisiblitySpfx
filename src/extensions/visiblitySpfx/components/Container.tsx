@@ -153,55 +153,73 @@ export default class Container extends React.Component<IContainerProps, IContain
                     {
                         key: target.id,
                         style: {
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
                             padding: '12px 0',
                             borderBottom: '1px solid #edebe9'
                         }
                     },
-                    // Label
-                    React.createElement('label', {
+                    // Main toggle row
+                    React.createElement('div', {
                         style: {
-                            fontSize: '14px',
-                            color: '#323130',
-                            fontWeight: '400',
-                            cursor: 'pointer',
-                            flex: 1
-                        },
-                        onClick: () => this.handleToggleChange(target.id, !isVisible)
-                    }, target.label),
-                    
-                    // Toggle switch
-                    React.createElement(
-                        'div',
-                        {
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            marginBottom: '4px'
+                        }
+                    },
+                        // Label
+                        React.createElement('label', {
                             style: {
-                                position: 'relative',
-                                width: '44px',
-                                height: '24px',
-                                backgroundColor: isVisible ? '#0078d4' : '#c8c6c4',
-                                borderRadius: '12px',
+                                fontSize: '14px',
+                                color: '#323130',
+                                fontWeight: '600',
                                 cursor: 'pointer',
-                                transition: 'background-color 0.2s ease',
-                                border: 'none'
+                                flex: 1
                             },
                             onClick: () => this.handleToggleChange(target.id, !isVisible)
-                        },
-                        React.createElement('div', {
-                            style: {
-                                position: 'absolute',
-                                top: '2px',
-                                left: isVisible ? '22px' : '2px',
-                                width: '20px',
-                                height: '20px',
-                                backgroundColor: 'white',
-                                borderRadius: '50%',
-                                transition: 'left 0.2s ease',
-                                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                            }
-                        })
-                    )
+                        }, target.label),
+                        
+                        // Toggle switch
+                        React.createElement(
+                            'div',
+                            {
+                                style: {
+                                    position: 'relative',
+                                    width: '44px',
+                                    height: '24px',
+                                    backgroundColor: isVisible ? '#0078d4' : '#c8c6c4',
+                                    borderRadius: '12px',
+                                    cursor: 'pointer',
+                                    transition: 'background-color 0.2s ease',
+                                    border: 'none'
+                                },
+                                onClick: () => this.handleToggleChange(target.id, !isVisible)
+                            },
+                            React.createElement('div', {
+                                style: {
+                                    position: 'absolute',
+                                    top: '2px',
+                                    left: isVisible ? '22px' : '2px',
+                                    width: '20px',
+                                    height: '20px',
+                                    backgroundColor: 'white',
+                                    borderRadius: '50%',
+                                    transition: 'left 0.2s ease',
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                                }
+                            })
+                        )
+                    ),
+                    
+                    // Selector details
+                    React.createElement('div', {
+                        style: {
+                            fontSize: '11px',
+                            color: '#605e5c',
+                            fontFamily: 'monospace',
+                            lineHeight: '1.4',
+                            marginLeft: '4px'
+                        }
+                    }, `Selectors: ${target.selectors.join(', ')}`)
                 );
             }),
 
