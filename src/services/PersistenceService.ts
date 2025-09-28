@@ -9,9 +9,11 @@ export class PersistenceService {
   private spHttpClient: SPHttpClient;
   private webUrl: string;
   private siteId: string;
+  private context: ApplicationCustomizerContext;
   private readonly SETTINGS_FILE_NAME = 'visibilityToggler.json';
 
   constructor(context: ApplicationCustomizerContext) {
+    this.context = context;
     this.spHttpClient = context.spHttpClient;
     this.webUrl = context.pageContext.web.absoluteUrl;
     this.siteId = context.pageContext.site.id.toString();
@@ -22,7 +24,10 @@ export class PersistenceService {
    */
   public async loadVisibilitySettings(): Promise<IVisibilitySettings> {
     try {
-      const url = `${this.webUrl}/_api/web/getfilebyserverrelativeurl('${this.webUrl}/SiteAssets/${this.SETTINGS_FILE_NAME}')/$value`;
+      // Use proper server-relative URL like monarchNav reference
+      const serverRelativeUrl = `${this.context.pageContext.web.serverRelativeUrl.replace(/\/$/, '')}/SiteAssets`;
+      const fileUrl = `${serverRelativeUrl}/${this.SETTINGS_FILE_NAME}`;
+      const url = `${this.webUrl}/_api/web/getfilebyserverrelativeurl('${fileUrl}')/$value`;
       
       const response: SPHttpClientResponse = await this.spHttpClient.get(url, SPHttpClient.configurations.v1);
       
@@ -55,24 +60,35 @@ export class PersistenceService {
         updatedUtc: new Date().toISOString()
       };
 
-      // Ensure Site Assets folder exists
-      await this.ensureSiteAssetsFolder();
-
-      const url = `${this.webUrl}/_api/web/getfolderbyserverrelativeurl('${this.webUrl}/SiteAssets')/files/add(url='${this.SETTINGS_FILE_NAME}',overwrite=true)`;
+      // Use proper server-relative URL like monarchNav reference
+      const serverRelativeUrl = `${this.context.pageContext.web.serverRelativeUrl.replace(/\/$/, '')}/SiteAssets`;
       
-      const response: SPHttpClientResponse = await this.spHttpClient.post(url, SPHttpClient.configurations.v1, {
-        headers: {
-          'Accept': 'application/json;odata=verbose',
-          'Content-Type': 'application/json;odata=verbose'
-        },
-        body: JSON.stringify(updatedSettings)
-      });
+      // Convert settings to JSON string with proper formatting
+      const settingsJson = JSON.stringify(updatedSettings, null, 4);
+      const blob = new Blob([settingsJson], { type: 'application/json' });
+      
+      // Update the file (overwrite existing) - using monarchNav approach
+      const uploadUrl = `${this.webUrl}/_api/web/GetFolderByServerRelativeUrl('${serverRelativeUrl}')/Files/add(overwrite=true,url='${this.SETTINGS_FILE_NAME}')`;
+      
+      const response: SPHttpClientResponse = await this.spHttpClient.post(
+        uploadUrl,
+        SPHttpClient.configurations.v1,
+        {
+          body: blob
+        }
+      );
 
       if (response.ok) {
         console.debug('[VT] Settings saved successfully');
         return true;
       } else {
-        console.warn('[VT] Failed to save settings:', response.status);
+        let errorData: unknown = null;
+        try {
+          errorData = await response.clone().json();
+        } catch {
+          errorData = await response.text();
+        }
+        console.warn('[VT] Failed to save settings:', response.status, errorData);
         return false;
       }
     } catch (error) {
@@ -112,19 +128,4 @@ export class PersistenceService {
     }
   }
 
-  /**
-   * Ensure Site Assets folder exists
-   */
-  private async ensureSiteAssetsFolder(): Promise<void> {
-    try {
-      const url = `${this.webUrl}/_api/web/ensurefolderbyserverrelativeurl('${this.webUrl}/SiteAssets')`;
-      await this.spHttpClient.post(url, SPHttpClient.configurations.v1, {
-        headers: {
-          'Accept': 'application/json;odata=verbose'
-        }
-      });
-    } catch (error) {
-      console.debug('[VT] Site Assets folder creation failed (may already exist):', error);
-    }
-  }
 }

@@ -34,6 +34,7 @@ export const DEFAULT_VISIBILITY_SETTINGS: IVisibilitySettings = {
   toggles: {
     siteHeader: true,
     hubNav: true,
+    suiteNav: true, // NEW
     commandBar: true,
     leftNav: true,
     breadcrumb: true,
@@ -52,8 +53,8 @@ export const TARGET_SELECTORS: ITargetSelector[] = [
     selectors: [
       '[data-automationid="SiteHeader"]',
       '.spSiteHeader',
-      '#SuiteNavWrapper',
-      '.o365cs-nav-header'
+      '.o365cs-nav-header',
+      '#spSiteHeader'
     ]
   },
   {
@@ -65,6 +66,15 @@ export const TARGET_SELECTORS: ITargetSelector[] = [
     ]
   },
   {
+    id: 'suiteNav',
+    label: 'Suite Navigation',
+    selectors: [
+      '#SuiteNavWrapper',
+      '.od-SuiteNav',
+      '.od-SuiteNav-DefaultHeight'
+    ]
+  },
+  {
     id: 'commandBar',
     label: 'Command Bar',
     selectors: [
@@ -73,7 +83,8 @@ export const TARGET_SELECTORS: ITargetSelector[] = [
       '#spCommandBar',
       '.o365cs-nav-commandBar',
       '.od-TopBar-item',
-      '.od-TopBar-commandBar'
+      '.od-TopBar-commandBar',
+      '.od-Files-topBar'
     ]
   },
   {

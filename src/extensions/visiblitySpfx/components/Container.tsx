@@ -1,8 +1,6 @@
 import * as React from 'react';
 import { IContainerProps } from './IContainerProps';
 import { IVisibilitySettings, DEFAULT_VISIBILITY_SETTINGS, TARGET_SELECTORS } from '../../../models/IVisibilitySettings';
-import { PersistenceService } from '../../../services/PersistenceService';
-import { VisibilityManager } from '../../../services/VisibilityManager';
 
 export interface IContainerState {
     settings: IVisibilitySettings;
@@ -11,20 +9,14 @@ export interface IContainerState {
 }
 
 export default class Container extends React.Component<IContainerProps, IContainerState> {
-    private persistenceService: PersistenceService;
-    private visibilityManager: VisibilityManager;
-
-    constructor(props: IContainerProps) {
-        super(props);
-        this.state = {
-            settings: DEFAULT_VISIBILITY_SETTINGS,
-            loading: true,
-            saving: false
-        };
-
-        this.persistenceService = new PersistenceService(this.props.context);
-        this.visibilityManager = new VisibilityManager();
-    }
+        constructor(props: IContainerProps) {
+            super(props);
+            this.state = {
+                settings: DEFAULT_VISIBILITY_SETTINGS,
+                loading: true,
+                saving: false
+            };
+        }
 
     public async componentDidMount(): Promise<void> {
         try {
@@ -35,43 +27,41 @@ export default class Container extends React.Component<IContainerProps, IContain
         }
     }
 
-    public componentWillUnmount(): void {
-        if (this.visibilityManager) {
-            this.visibilityManager.dispose();
+        public componentWillUnmount(): void {
+            // Services are managed by the Application Customizer
         }
-    }
 
-    private async loadSettings(): Promise<void> {
-        try {
-            this.setState({ loading: true });
-            const settings = await this.persistenceService.loadVisibilitySettings();
-            this.setState({ settings });
-            
-            // Apply settings immediately
-            this.visibilityManager.applySettings(settings);
-            console.debug('[VT] Settings loaded and applied:', settings);
-        } catch (error) {
-            console.error('[VT] Error loading settings:', error);
-        } finally {
-            this.setState({ loading: false });
+        private async loadSettings(): Promise<void> {
+            try {
+                this.setState({ loading: true });
+                const settings = await this.props.persistenceService.loadVisibilitySettings();
+                this.setState({ settings });
+                
+                // Apply settings immediately
+                this.props.visibilityManager.applySettings(settings);
+                console.debug('[VT] Settings loaded and applied:', settings);
+            } catch (error) {
+                console.error('[VT] Error loading settings:', error);
+            } finally {
+                this.setState({ loading: false });
+            }
         }
-    }
 
-    private async saveSettings(settings: IVisibilitySettings): Promise<void> {
-        try {
-            this.setState({ saving: true });
-            await this.persistenceService.saveVisibilitySettings(settings);
-            this.setState({ settings });
-            
-            // Apply settings immediately after saving
-            this.visibilityManager.applySettings(settings);
-            console.debug('[VT] Settings saved and applied:', settings);
-        } catch (error) {
-            console.error('[VT] Error saving settings:', error);
-        } finally {
-            this.setState({ saving: false });
+        private async saveSettings(settings: IVisibilitySettings): Promise<void> {
+            try {
+                this.setState({ saving: true });
+                await this.props.persistenceService.saveVisibilitySettings(settings);
+                this.setState({ settings });
+                
+                // Apply settings immediately after saving
+                this.props.visibilityManager.applySettings(settings);
+                console.debug('[VT] Settings saved and applied:', settings);
+            } catch (error) {
+                console.error('[VT] Error saving settings:', error);
+            } finally {
+                this.setState({ saving: false });
+            }
         }
-    }
 
     private handleToggleChange = async (toggleId: string, value: boolean): Promise<void> => {
         const newSettings: IVisibilitySettings = {
@@ -86,8 +76,8 @@ export default class Container extends React.Component<IContainerProps, IContain
         // Update state immediately for UI responsiveness
         this.setState({ settings: newSettings });
         
-        // Apply settings immediately
-        this.visibilityManager.applySettings(newSettings);
+            // Apply settings immediately
+            this.props.visibilityManager.applySettings(newSettings);
         
         // Save to Site Assets
         await this.saveSettings(newSettings);

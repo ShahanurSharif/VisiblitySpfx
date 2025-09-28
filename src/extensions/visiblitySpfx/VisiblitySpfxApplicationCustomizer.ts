@@ -10,6 +10,8 @@ import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import Container from './components/Container';
 import { IFabPosition } from '../../models/IVisibilitySettings';
+import { PersistenceService } from '../../services/PersistenceService';
+import { VisibilityManager } from '../../services/VisibilityManager';
 
 const LOG_SOURCE: string = 'VisiblitySpfxApplicationCustomizer';
 
@@ -34,8 +36,10 @@ export default class VisiblitySpfxApplicationCustomizer
   private _dragStart: { x: number; y: number } | undefined;
   private _fabElement: HTMLElement | undefined;
   private _hasDragged: boolean = false;
+  private _persistenceService: PersistenceService;
+  private _visibilityManager: VisibilityManager;
 
-  public onInit(): Promise<void> {
+  public async onInit(): Promise<void> {
     Log.info(LOG_SOURCE, `Initialized ${strings.Title}`);
 
     // Show alert to confirm extension is loading
@@ -45,6 +49,19 @@ export default class VisiblitySpfxApplicationCustomizer
     if (window.location.search.indexOf('VT_DISABLE') !== -1) {
       console.debug('[VT] Feature disabled via URL parameter');
       return Promise.resolve();
+    }
+
+    // Initialize services
+    this._persistenceService = new PersistenceService(this.context);
+    this._visibilityManager = new VisibilityManager();
+
+    // Load and apply settings on site load
+    try {
+      const settings = await this._persistenceService.loadVisibilitySettings();
+      this._visibilityManager.applySettings(settings);
+      console.debug('[VT] Settings loaded and applied on site load:', settings);
+    } catch (error) {
+      console.error('[VT] Error loading settings on site load:', error);
     }
 
     // Load Fabric icons CSS
@@ -71,15 +88,15 @@ export default class VisiblitySpfxApplicationCustomizer
           left: this._fabPosition?.left || 'auto',
           right: this._fabPosition?.left ? 'auto' : 20,
           zIndex: 1000,
-          width: '48px',
-          height: '48px',
+          width: '25px',
+          height: '25px',
           padding: '0',
-          backgroundColor: '#0078d4',
+          backgroundColor: 'rgb(95, 95, 95)',
           color: 'white',
           border: 'none',
           borderRadius: '50%',
           cursor: 'move',
-          fontSize: '20px',
+          fontSize: '12px',
           userSelect: 'none',
           boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
           transition: this._isDragging ? 'none' : 'box-shadow 0.2s ease',
@@ -91,7 +108,7 @@ export default class VisiblitySpfxApplicationCustomizer
       React.createElement('i', {
         className: 'ms-Icon ms-Icon--View',
         style: {
-          fontSize: '20px',
+          fontSize: '12px',
           lineHeight: '1'
         }
       })
@@ -136,13 +153,15 @@ export default class VisiblitySpfxApplicationCustomizer
       }
     });
 
-    // Create the Container component
-    const containerElement: React.ReactElement = React.createElement(
-      Container, 
-      {
-        context: this.context
-      }
-    );
+        // Create the Container component
+        const containerElement: React.ReactElement = React.createElement(
+          Container, 
+          {
+            context: this.context,
+            persistenceService: this._persistenceService,
+            visibilityManager: this._visibilityManager
+          }
+        );
 
     // Render the container in the dialog
     ReactDom.render(containerElement, this._containerElement);
@@ -260,8 +279,8 @@ export default class VisiblitySpfxApplicationCustomizer
     const newTop = e.clientY - this._dragStart.y;
     
     // Constrain to viewport bounds
-    const maxLeft = window.innerWidth - (this._fabElement?.offsetWidth || 48);
-    const maxTop = window.innerHeight - (this._fabElement?.offsetHeight || 48);
+    const maxLeft = window.innerWidth - (this._fabElement?.offsetWidth || 25);
+    const maxTop = window.innerHeight - (this._fabElement?.offsetHeight || 25);
     
     const constrainedLeft = Math.max(0, Math.min(newLeft, maxLeft));
     const constrainedTop = Math.max(0, Math.min(newTop, maxTop));
@@ -296,16 +315,21 @@ export default class VisiblitySpfxApplicationCustomizer
     this.saveFabPosition();
   };
 
-  public onDispose(): void {
-    // Clean up event listeners
-    document.removeEventListener('mousemove', this.handleMouseMove);
-    document.removeEventListener('mouseup', this.handleMouseUp);
-    
-    if (this._topPlaceholder && this._topPlaceholder.domElement) {
-      ReactDom.unmountComponentAtNode(this._topPlaceholder.domElement);
-    }
-    
-    // Clean up dialog container if it exists
-    this.closeDialogContainer();
-  }
+      public onDispose(): void {
+        // Clean up event listeners
+        document.removeEventListener('mousemove', this.handleMouseMove);
+        document.removeEventListener('mouseup', this.handleMouseUp);
+        
+        if (this._topPlaceholder && this._topPlaceholder.domElement) {
+          ReactDom.unmountComponentAtNode(this._topPlaceholder.domElement);
+        }
+        
+        // Clean up dialog container if it exists
+        this.closeDialogContainer();
+
+        // Clean up services
+        if (this._visibilityManager) {
+          this._visibilityManager.dispose();
+        }
+      }
 }
