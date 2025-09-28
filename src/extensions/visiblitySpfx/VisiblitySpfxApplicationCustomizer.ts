@@ -9,7 +9,7 @@ import * as strings from 'VisiblitySpfxApplicationCustomizerStrings';
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import Container from './components/Container';
-import { IFabPosition } from '../../models/IVisibilitySettings';
+import { IFabPosition, IVisibilitySettings } from '../../models/IVisibilitySettings';
 import { PersistenceService } from '../../services/PersistenceService';
 import { VisibilityManager } from '../../services/VisibilityManager';
 
@@ -18,7 +18,7 @@ const LOG_SOURCE: string = 'VisiblitySpfxApplicationCustomizer';
 /**
  * If your command set uses the ClientSideComponentProperties JSON input,
  * it will be deserialized into the BaseExtension.properties object.
- * You can define an interface to describe it. 
+ * You can define an interface to describe it.
  */
 export interface IVisiblitySpfxApplicationCustomizerProperties {
   // This is an example; replace with your own property
@@ -38,6 +38,8 @@ export default class VisiblitySpfxApplicationCustomizer
   private _hasDragged: boolean = false;
   private _persistenceService: PersistenceService;
   private _visibilityManager: VisibilityManager;
+  private _mutationObserver: MutationObserver | undefined;
+  private _currentSettings: IVisibilitySettings | undefined;
 
   public async onInit(): Promise<void> {
     Log.info(LOG_SOURCE, `Initialized ${strings.Title}`);
@@ -58,11 +60,15 @@ export default class VisiblitySpfxApplicationCustomizer
     // Load and apply settings on site load
     try {
       const settings = await this._persistenceService.loadVisibilitySettings();
+      this._currentSettings = settings;
       this._visibilityManager.applySettings(settings);
       console.debug('[VT] Settings loaded and applied on site load:', settings);
     } catch (error) {
       console.error('[VT] Error loading settings on site load:', error);
     }
+
+    // Start MutationObserver to watch for DOM changes
+    this.startMutationObserver();
 
     // Load Fabric icons CSS
     this.loadFabricIcons();
@@ -159,7 +165,10 @@ export default class VisiblitySpfxApplicationCustomizer
           {
             context: this.context,
             persistenceService: this._persistenceService,
-            visibilityManager: this._visibilityManager
+            visibilityManager: this._visibilityManager,
+            onSettingsChange: (settings: IVisibilitySettings) => {
+              this._currentSettings = settings;
+            }
           }
         );
 
@@ -315,6 +324,105 @@ export default class VisiblitySpfxApplicationCustomizer
     this.saveFabPosition();
   };
 
+  private startMutationObserver(): void {
+    if (typeof MutationObserver === 'undefined') {
+      console.warn('[VT] MutationObserver not supported');
+      return;
+    }
+
+    this._mutationObserver = new MutationObserver((mutations) => {
+      let shouldReapply = false;
+      
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+          // Check if any added nodes match our target selectors
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              const element = node as Element;
+              // Check if this element or its children match any of our selectors
+              if (this.matchesTargetSelectors(element)) {
+                shouldReapply = true;
+              }
+            }
+          });
+        }
+      });
+
+      if (shouldReapply && this._currentSettings) {
+        console.debug('[VT] DOM changes detected, reapplying settings');
+        // Small delay to ensure DOM is fully rendered
+        setTimeout(() => {
+          if (this._currentSettings) {
+            this._visibilityManager.applySettings(this._currentSettings);
+          }
+        }, 100);
+      }
+    });
+
+    // Start observing
+    this._mutationObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: false,
+      characterData: false
+    });
+
+    console.debug('[VT] MutationObserver started');
+  }
+
+  private matchesTargetSelectors(element: Element): boolean {
+    // Check if element matches any of our target selectors
+    const selectors = [
+      '[data-automationid="SiteHeader"]',
+      '.spSiteHeader',
+      '.o365cs-nav-header',
+      '#spSiteHeader',
+      '.ms-HubNav',
+      '.ms-HubNav-enhancedMegaMenu',
+      '#SuiteNavWrapper',
+      '.od-SuiteNav',
+      '.od-SuiteNav-DefaultHeight',
+      '[data-automationid="CommandBar"]',
+      '.spCommandBar',
+      '#spCommandBar',
+      '.o365cs-nav-commandBar',
+      '.od-TopBar-item',
+      '.od-TopBar-commandBar',
+      '.od-Files-topBar',
+      '[data-automationid="LeftNav"]',
+      '#spLeftNav',
+      '.o365cs-nav-leftNav',
+      '.sp-leftNav',
+      '.Files-leftNav',
+      '.Files-has-leftNavToggleButton',
+      '[data-automationid="Breadcrumb"]',
+      '.sp-breadcrumb',
+      '.o365cs-nav-breadcrumb',
+      '[data-automationid="PageHeader"]',
+      '.sp-pageHeader',
+      '.o365cs-nav-pageHeader',
+      '[data-automationid="SiteContent"]',
+      '.sp-siteContent',
+      '.o365cs-nav-siteContent',
+      '.ms-SiteContent'
+    ];
+
+    for (const selector of selectors) {
+      try {
+        if (element.matches && element.matches(selector)) {
+          return true;
+        }
+        // Also check if any child elements match
+        if (element.querySelector && element.querySelector(selector)) {
+          return true;
+        }
+      } catch {
+        // Ignore invalid selectors
+      }
+    }
+    return false;
+  }
+
       public onDispose(): void {
         // Clean up event listeners
         document.removeEventListener('mousemove', this.handleMouseMove);
@@ -330,6 +438,11 @@ export default class VisiblitySpfxApplicationCustomizer
         // Clean up services
         if (this._visibilityManager) {
           this._visibilityManager.dispose();
+        }
+
+        // Clean up MutationObserver
+        if (this._mutationObserver) {
+          this._mutationObserver.disconnect();
         }
       }
 }

@@ -55,6 +55,12 @@ export default class Container extends React.Component<IContainerProps, IContain
                 
                 // Apply settings immediately after saving
                 this.props.visibilityManager.applySettings(settings);
+                
+                // Notify parent component of settings change
+                if (this.props.onSettingsChange) {
+                    this.props.onSettingsChange(settings);
+                }
+                
                 console.debug('[VT] Settings saved and applied:', settings);
             } catch (error) {
                 console.error('[VT] Error saving settings:', error);
@@ -76,8 +82,13 @@ export default class Container extends React.Component<IContainerProps, IContain
         // Update state immediately for UI responsiveness
         this.setState({ settings: newSettings });
         
-            // Apply settings immediately
-            this.props.visibilityManager.applySettings(newSettings);
+        // Apply settings immediately
+        this.props.visibilityManager.applySettings(newSettings);
+        
+        // Notify parent component of settings change
+        if (this.props.onSettingsChange) {
+            this.props.onSettingsChange(newSettings);
+        }
         
         // Save to Site Assets
         await this.saveSettings(newSettings);
