@@ -37,7 +37,8 @@ export const DEFAULT_VISIBILITY_SETTINGS: IVisibilitySettings = {
     commandBar: true,
     leftNav: true,
     breadcrumb: true,
-    pageHeader: true
+    pageHeader: true,
+    siteContent: true
   }
 };
 
@@ -70,7 +71,9 @@ export const TARGET_SELECTORS: ITargetSelector[] = [
       '[data-automationid="CommandBar"]',
       '.spCommandBar',
       '#spCommandBar',
-      '.o365cs-nav-commandBar'
+      '.o365cs-nav-commandBar',
+      '.od-TopBar-item',
+      '.od-TopBar-commandBar'
     ]
   },
   {
@@ -80,7 +83,9 @@ export const TARGET_SELECTORS: ITargetSelector[] = [
       '[data-automationid="LeftNav"]',
       '#spLeftNav',
       '.o365cs-nav-leftNav',
-      '.sp-leftNav'
+      '.sp-leftNav',
+      '.Files-leftNav',
+      '.Files-has-leftNavToggleButton'
     ]
   },
   {
@@ -99,6 +104,16 @@ export const TARGET_SELECTORS: ITargetSelector[] = [
       '[data-automationid="PageHeader"]',
       '.sp-pageHeader',
       '.o365cs-nav-pageHeader'
+    ]
+  },
+  {
+    id: 'siteContent',
+    label: 'Site Content Pages',
+    selectors: [
+      '[data-automationid="SiteContent"]',
+      '.sp-siteContent',
+      '.o365cs-nav-siteContent',
+      '.ms-SiteContent'
     ]
   }
 ];
