@@ -43,7 +43,7 @@ export default class VisiblitySpfxApplicationCustomizer
     Log.info(LOG_SOURCE, `Initialized ${strings.Title}`);
 
     // Show alert to confirm extension is loading
-    alert('Visibility Toggler Extension Loaded! 🎉');
+    // alert('Visibility Toggler Extension Loaded! 🎉');
 
     // Check for feature flag
     if (window.location.search.indexOf('VT_DISABLE') !== -1) {
