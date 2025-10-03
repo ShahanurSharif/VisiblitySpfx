@@ -136,15 +136,48 @@ export default class Container extends React.Component<IContainerProps, IContain
                     maxWidth: '500px'
                 }
             },
-            // Header
-            React.createElement('h3', { 
-                style: { 
-                    margin: '0 0 20px 0',
-                    color: '#323130',
-                    fontSize: '18px',
-                    fontWeight: '600'
-                } 
-            }, 'Visibility Toggler'),
+            // Header with close icon
+            React.createElement('div', {
+                style: {
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '20px'
+                }
+            },
+                React.createElement('h3', { 
+                    style: { 
+                        margin: '0',
+                        color: '#323130',
+                        fontSize: '18px'
+                    } 
+                }, 'Visibility Toggler'),
+                React.createElement('button', {
+                    onClick: () => {
+                        console.log('Close dialog');
+                        // Close dialog by removing from DOM
+                        const container = document.querySelector('[data-vt-dialog]');
+                        if (container && container.parentNode) {
+                            container.parentNode.removeChild(container);
+                        }
+                    },
+                    style: {
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: '4px',
+                        fontSize: '16px',
+                        color: '#605e5c',
+                        borderRadius: '4px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '24px',
+                        height: '24px'
+                    },
+                    title: 'Close'
+                }, '✕')
+            ),
             
             // Toggle switches for each target
             ...TARGET_SELECTORS.map(target => {
@@ -172,7 +205,6 @@ export default class Container extends React.Component<IContainerProps, IContain
                             style: {
                                 fontSize: '14px',
                                 color: '#323130',
-                                fontWeight: '600',
                                 cursor: 'pointer',
                                 flex: 1
                             },
@@ -209,18 +241,7 @@ export default class Container extends React.Component<IContainerProps, IContain
                                 }
                             })
                         )
-                    ),
-                    
-                    // Selector details
-                    React.createElement('div', {
-                        style: {
-                            fontSize: '11px',
-                            color: '#605e5c',
-                            fontFamily: 'monospace',
-                            lineHeight: '1.4',
-                            marginLeft: '4px'
-                        }
-                    }, `Selectors: ${target.selectors.join(', ')}`)
+                        )
                 );
             }),
 
@@ -237,33 +258,32 @@ export default class Container extends React.Component<IContainerProps, IContain
                 }
             }, 'Saving...'),
 
-            // Close button
+            // Footer with Monarch logo
             React.createElement('div', {
                 style: {
                     marginTop: '20px',
-                    textAlign: 'right'
+                    paddingTop: '15px',
+                    borderTop: '1px solid #edebe9',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
                 }
             },
-                React.createElement('button', {
-                    onClick: () => {
-                        console.log('Close dialog');
-                        // Close dialog by removing from DOM
-                        const container = document.querySelector('[data-vt-dialog]');
-                        if (container && container.parentNode) {
-                            container.parentNode.removeChild(container);
-                        }
-                    },
+                React.createElement('span', {
                     style: {
-                        padding: '8px 16px',
-                        backgroundColor: '#0078d4',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                        fontWeight: '400'
+                        fontSize: '12px',
+                        color: '#605e5c'
                     }
-                }, 'Close')
+                }, 'Powered By'),
+                React.createElement('img', {
+                    src: require('../../../components/Monarch_black.png'),
+                    alt: 'Monarch',
+                    style: {
+                        height: '16px',
+                        width: 'auto'
+                    }
+                })
             )
         );
     }
